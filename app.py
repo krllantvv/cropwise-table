@@ -28,19 +28,50 @@ def home():
             <meta charset="UTF-8">
             <title>Cropwise Report</title>
             <style>
-                body {{ font-family: Arial, sans-serif; padding: 20px; }}
-                table {{ border-collapse: collapse; width: 100%; table-layout: fixed; }}
-                th, td {{ border: 1px solid #ccc; padding: 8px; text-align: left; font-size: 14px; }}
-                th {{ background-color: #f0f0f0; font-weight: bold; }}
+                body {{
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                }}
+                table {{
+                    border-collapse: collapse;
+                    width: 100%;
+                    table-layout: fixed;
+                }}
+                th, td {{
+                    border: 1px solid #ccc;
+                    padding: 8px;
+                    text-align: left;
+                    font-size: 14px;
+                }}
+                th {{
+                    background-color: #f0f0f0;
+                    font-weight: bold;
+                }}
             </style>
+            <script>
+                function refreshTable() {{
+                    fetch("/table")
+                        .then(response => response.text())
+                        .then(html => {{
+                            document.getElementById("live-table").innerHTML = html;
+                        }});
+                }}
+                setInterval(refreshTable, 30000); // обновление каждые 30 сек
+                window.onload = refreshTable;
+            </script>
         </head>
         <body>
             <h2>Cropwise Report: trial_report</h2>
-            {html_table}
+            <div id="live-table">{html_table}</div>
         </body>
     </html>
     """
     return render_template_string(html_template)
+
+@app.route("/table")
+def get_table_only():
+    df = get_data()
+    return df.to_html(index=False, border=1)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
